@@ -1,0 +1,15 @@
+# /etc/systemd/system/primus-proxy.service
+[Unit]
+Description=Primus Proxy
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/primus-proxy
+EnvironmentFile=/opt/primus-proxy/.env
+ExecStart=/usr/bin/bash -lc '/opt/primus-proxy/gradlew :primus-proxy:run'
+Restart=always
+RestartSec=3
+User=primus
+
+[Install]
+WantedBy=multi-user.target
