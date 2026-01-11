@@ -4,6 +4,7 @@ import android.util.Log
 import com.company.primus2.PrimusApp
 import com.company.primus2.core_ai.PrimusCore
 import com.company.primus2.core_ai.model.SpeechLogEntry
+import com.company.primus2.learn.SleepManager
 import com.company.primus2.memory.db.entities.MessageEntity
 import com.company.primus2.net.ProxyClient
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +16,7 @@ class Services(private val app: PrimusApp) {
     private val scope: CoroutineScope get() = app.appScope
     private val primusCore = PrimusCore()
     private val proxyClient = ProxyClient.default()
+    private val sleepManager = SleepManager(app.repository)
 
     fun sleepRefine() {
         scope.launch {
@@ -57,6 +59,7 @@ class Services(private val app: PrimusApp) {
                 // ▼▼▼ ここからが今回の追加箇所 ▼▼▼
                 // 自己内省の最後に、GoalEngineを呼び出して目標評価を実行する
                 app.goalEngine.evaluateAndCreateGoals()
+                sleepManager.trySleepConsolidate()
                 // ▲▲▲ 追加ここまで ▲▲▲
 
             } catch (t: Throwable) {
