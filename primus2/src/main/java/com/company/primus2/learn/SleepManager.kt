@@ -1,5 +1,6 @@
 package com.company.primus2.learn
 
+import com.company.primus2.memory.db.entities.MessageEntity
 import com.company.primus2.repository.PrimusRepository
 import com.company.primus2.ui.util.TextGuards
 import kotlinx.coroutines.Dispatchers
@@ -21,11 +22,20 @@ class SleepManager(private val repository: PrimusRepository) {
 
         val text = all.joinToString("\n") { it.content }
         val summary = TextGuards.summarizeWithoutEcho(text)
-        if (summary.isNotBlank()) {
-            // TODO: 要約メッセージを保存するロジックを実装する必要がある
-            // repository.insertMessage(...)
-            lastDay = day
-            true
-        } else false
+        if (summary.isBlank()) return@withContext false
+
+        val session = repository.getLatestSession() ?: return@withContext false
+        val now = System.currentTimeMillis()
+        repository.insertMessage(
+            MessageEntity(
+                sessionId = session.id,
+                role = "SUMMARY",
+                content = summary,
+                createdAt = now,
+                updatedAt = now
+            )
+        )
+        lastDay = day
+        true
     }
 }

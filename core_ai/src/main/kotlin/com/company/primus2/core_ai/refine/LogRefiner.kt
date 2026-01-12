@@ -50,8 +50,28 @@ class LogRefiner {
             content = introspectionText,
             tags = setOf("self-reflection", "consolidation"),
             importance = 0.8, // メタ記憶は重要度を高く設定
-            emotions = emptyMap(), // TODO: テキストから感情を分析して設定
+            emotions = inferEmotions(introspectionText),
             createdAtEpochMs = now
         )
+    }
+
+    private fun inferEmotions(text: String): Map<String, Double> {
+        if (text.isBlank()) return emptyMap()
+
+        val normalized = text.lowercase()
+        val lexicon = mapOf(
+            "joy" to listOf("嬉", "楽しい", "最高", "happy", "glad", "delight"),
+            "sadness" to listOf("悲", "寂", "つら", "sad", "sorrow", "down"),
+            "anger" to listOf("怒", "腹立", "イラ", "angry", "mad", "furious"),
+            "fear" to listOf("怖", "不安", "恐", "fear", "scared", "anxious"),
+            "trust" to listOf("信頼", "安心", "頼", "trust", "safe", "relief")
+        )
+
+        val scores = lexicon.mapValues { (_, keys) ->
+            val hits = keys.count { normalized.contains(it.lowercase()) }
+            (hits / 3.0).coerceIn(0.0, 1.0)
+        }.filterValues { it > 0.0 }
+
+        return scores
     }
 }
